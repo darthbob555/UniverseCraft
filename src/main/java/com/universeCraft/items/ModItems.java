@@ -13,8 +13,8 @@ public class ModItems {
 	
 	public static ToolMaterial condensed = EnumHelper.addToolMaterial("condensed", 2, 750, 6.5F, 2.0F, 10);
 	public static ToolMaterial singularium = EnumHelper.addToolMaterial("singularium", 3, 2000, 8.5F, 4.0F, 14);
-	public static ToolMaterial blackholium = EnumHelper.addToolMaterial("blackholium", 5, 100000, 1000000000000F, 10F, 100);
-	public static ToolMaterial blackholiumS = EnumHelper.addToolMaterial("blackholium", 5, 100000, 100F, 250F, 100);
+	public static ToolMaterial blackholium = EnumHelper.addToolMaterial("blackholium", 5, 100000, 100F, 10F, 100);
+	public static ToolMaterial blackholiumS = EnumHelper.addToolMaterial("blackholiumS", 5, 100000, 100F, 250F, 100);
 	
 	static ArmorMaterial darkMatter = EnumHelper.addArmorMaterial("darkmatter", 18, new int[] { 3, 6, 5, 3 }, 0);
 	static ArmorMaterial blackholiumArmor = EnumHelper.addArmorMaterial("blackholiumArmor", 10000, new int[] { 5, 8, 7, 4 }, 1000);
@@ -67,7 +67,7 @@ public class ModItems {
     	blackholiumSword = new ItemBlackholiumSword(blackholiumS, "BlackholiumSword");
     	blackholiumAxe = new ItemBlackholiumAxe(blackholium, "BlackholiumAxe");
     	blackholiumShovel = new ItemBlackholiumShovel(blackholium, "BlackholiumShovel");
-    	blackholiumPaxel = new ItemBlackholiumPaxel(blackholiumS, "BlackholiumPaxel");
+    	blackholiumPaxel = new ItemBlackholiumPaxel(blackholium, "BlackholiumPaxel");
     	
     	darkMatterHelmet = new DarkMatterArmor(darkMatter, 0, "darkMatterHelmet");
     	darkMatterChestplate = new DarkMatterArmor(darkMatter, 1, "darkMatterChestplate");

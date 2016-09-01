@@ -570,12 +570,6 @@ public class CraftingRecipeHandler {
 	public void shapelessRecipe(){
 		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 2), Items.iron_ingot, Items.iron_ingot, Items.iron_ingot, new ItemStack(Items.dye, 1, 1));
 		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 3), Items.iron_ingot, Items.iron_ingot, Items.iron_ingot, new ItemStack(Items.dye, 1, 4));
-		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 34), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 34));
-		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 35), new ItemStack(ModItems.Particles, 1, 28), new ItemStack(ModItems.Particles, 1, 35));
-		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 36), new ItemStack(ModItems.Particles, 1, 28), new ItemStack(ModItems.Particles, 1, 36));
-		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 37), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 37));
-		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 38), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 38));
-		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 49), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 26), new ItemStack(ModItems.Particles, 1, 49));
 		GameRegistry.addShapelessRecipe(new ItemStack(ModItems.Particles, 1, 68), new ItemStack(ModItems.Particles, 1, 18), new ItemStack(ModItems.Particles, 1, 18),new ItemStack(ModItems.Particles, 1, 18));
 
 		ItemStack star = new ItemStack(ModItems.Particles, 1, 46);

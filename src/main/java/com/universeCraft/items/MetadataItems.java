@@ -1,11 +1,25 @@
 package com.universeCraft.items;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IIcon;
+import net.minecraft.world.World;
+
 import org.lwjgl.input.Keyboard;
 
+import com.universeCraft.handler.IonEnergyStored;
 import com.universeCraft.main.UniverseCraft;
 import com.universeCraft.tileEntity.TileEntityAtomicPulveriser;
 import com.universeCraft.tileEntity.TileEntityEnergyAcceptor;
@@ -19,20 +33,6 @@ import com.universeCraft.tileEntity.TileEntityStellarEnricher;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.IIcon;
-import net.minecraft.world.World;
 
 public class MetadataItems extends Item {
 
@@ -41,6 +41,8 @@ public class MetadataItems extends Item {
 	public IIcon[] icons = new IIcon[71];
 	private IIcon[] icons2 = new IIcon[5];
 	private String[] name = new String[7];
+
+	IonEnergyStored energyStored = new IonEnergyStored();
 
 	public MetadataItems(String unlocalizedName) {
 		super();
@@ -58,21 +60,21 @@ public class MetadataItems extends Item {
 
 	@Override
 	public IIcon getIconFromDamage(int meta) {
-		if (meta > 70)
+		if(meta > 70)
 			meta = 0;
 		return this.icons[meta];
 	}
 
 	@Override
-	public void getSubItems(Item item, CreativeTabs tab, List list) {
-		for (int i = 0; i < 71; i ++) {
+	public void getSubItems(Item item, CreativeTabs tab, List list){
+		for(int i = 0; i < 71; i ++){
 			list.add(new ItemStack(item, 1, i));
 		}
 	}
 
 	@Override
 	public void registerIcons(IIconRegister reg) {
-		for (int i = 0; i < 71; i ++) {
+		for(int i = 0; i < 71; i ++){
 			if(i == 37){
 				this.icons2[0] = reg.registerIcon(UniverseCraft.MODID + ":" + "Water");
 				this.icons2[1] = reg.registerIcon(UniverseCraft.MODID + ":" + "Lava");
@@ -92,12 +94,12 @@ public class MetadataItems extends Item {
 	public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int par7, float par8, float par9, float par10){
 		Random rand = new Random();
 		if(itemstack.getTagCompound() != null){
-			if(itemstack.getTagCompound().hasKey("Resources")){
-				if(itemstack.getTagCompound().getInteger("Resources") > 0){
+			if(itemstack.getTagCompound().hasKey("Energy")){
+				if(itemstack.getTagCompound().getInteger("Energy") > 0){
 					if(itemstack.getItemDamage() == 34){
-						if(world.getBlock(x, y+1, z) == Blocks.air){
+						if(itemstack.getTagCompound().getInteger("Energy") >= 3000 && world.getBlock(x, y+1, z) == Blocks.air){
 							world.setBlock(x, y+1, z, Blocks.torch);
-							itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-1);
+							itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-3000);
 							return true;
 						}
 						else{
@@ -105,9 +107,9 @@ public class MetadataItems extends Item {
 						}
 					}
 					else if(itemstack.getItemDamage() == 35){
-						if(world.getBlock(x, y+1, z) == Blocks.air){
+						if(itemstack.getTagCompound().getInteger("Energy") >= 25000 && world.getBlock(x, y+1, z) == Blocks.air){
 							world.setBlock(x, y+1, z, Blocks.glowstone);
-							itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-1);
+							itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-25000);
 							return true;
 						}
 						else{
@@ -115,9 +117,13 @@ public class MetadataItems extends Item {
 						}
 					}
 					else if(itemstack.getItemDamage() == 36){
-						if (!world.isRemote) {
+						if (itemstack.getTagCompound().getInteger("Energy") >= 120000 && !world.isRemote) {
 							player.addExperience(370+rand.nextInt(505));
-							itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-1);
+							itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-120000);
+						}
+						else{
+							player.addChatComponentMessage(new ChatComponentText("Out of Energy."));
+							return false;
 						}
 						return true;
 					}
@@ -134,16 +140,21 @@ public class MetadataItems extends Item {
 							return true;
 						}
 						else if(world.getBlock(x, y+1, z) == Blocks.air){
-							if(modeFluid == 0){
+							if(itemstack.getTagCompound().getInteger("Energy") >= 10000 && modeFluid == 0){
 								world.setBlock(x, y+1, z, Blocks.water);
+								itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-10000);
+							}
+							else if(itemstack.getTagCompound().getInteger("Energy") >= 25000){
+								world.setBlock(x, y+1, z, Blocks.lava);
+								itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-25000);
 							}
 							else{
-								world.setBlock(x, y+1, z, Blocks.lava);
+								player.addChatComponentMessage(new ChatComponentText("Not enough energy!"));
 							}
-							itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-1);
 							return true;
 						}
 						else{
+							player.addChatComponentMessage(new ChatComponentText("Out of Energy."));
 							return false;
 						}
 					}
@@ -163,19 +174,25 @@ public class MetadataItems extends Item {
 							return true;
 						}
 						else if(world.getBlock(x, y+1, z) == Blocks.air){
-							if(modeSolid == 0){
+							if(itemstack.getTagCompound().getInteger("Energy") >= 5000 && modeSolid == 0){
 								world.setBlock(x, y+1, z, Blocks.cobblestone);
-								itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-1);
+								itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-5000);
+								return true;
 							}
-							else if(modeSolid == 1){
+							else if(itemstack.getTagCompound().getInteger("Energy") >= 7500 && modeSolid == 1){
 								world.setBlock(x, y+1, z, Blocks.stone);
-								itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-2);
+								itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-7500);
+								return true;
+							}
+							else if(itemstack.getTagCompound().getInteger("Energy") >= 20000){
+								world.setBlock(x, y+1, z, Blocks.obsidian);
+								itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-20000);
+								return true;
 							}
 							else{
-								world.setBlock(x, y+1, z, Blocks.obsidian);
-								itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-5);
+								player.addChatComponentMessage(new ChatComponentText("Out of Energy."));
+								return false;
 							}
-							return true;
 						}
 						else{
 							return false;
@@ -193,16 +210,20 @@ public class MetadataItems extends Item {
 									}
 								}
 							}
-							else if(!world.isRemote){
+							else if(itemstack.getTagCompound().getInteger("Energy") >= 125000 && !world.isRemote){
 								if(itemstack.getTagCompound().getInteger("Time") == 0){
 									world.setWorldTime(0);
 								}
 								else if(itemstack.getTagCompound().getInteger("Time") == 1){
 									world.setWorldTime(12000);
 								}
-								itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")-1);
+								itemstack.getTagCompound().setInteger("Energy", itemstack.getTagCompound().getInteger("Energy")-125000);
+								return true;
 							}
-							return true;
+							else{
+								player.addChatComponentMessage(new ChatComponentText("Out of Energy."));
+								return false;
+							}
 						}
 						else{
 							return false;
@@ -213,7 +234,7 @@ public class MetadataItems extends Item {
 					}
 				}
 				else{
-					player.addChatComponentMessage(new ChatComponentText("Out of resources."));
+					player.addChatComponentMessage(new ChatComponentText("Out of Energy."));
 					return false;
 				}
 			}
@@ -442,40 +463,39 @@ public class MetadataItems extends Item {
 
 	@Override
 	public void onUpdate(ItemStack itemstack, World world, Entity entity, int par4, boolean par5) {
-		if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Recharge")){
-			if(!world.isRemote){
-				itemstack.getTagCompound().setInteger("Resources", itemstack.getTagCompound().getInteger("Resources")+1);
-			}
-			itemstack.getTagCompound().removeTag("Recharge");
-		}
-		else if(itemstack.getItemDamage() == 34){
+		if(itemstack.getItemDamage() == 34){
 			if(itemstack.getTagCompound() == null){
 				itemstack.setTagCompound(new NBTTagCompound());
-				itemstack.getTagCompound().setInteger("Resources", 512);
+				itemstack.getTagCompound().setInteger("Energy", 0);
+				itemstack.getTagCompound().setInteger("Capacity", 100000);
 			}
 		}
 		else if(itemstack.getItemDamage() == 35){
 			if(itemstack.getTagCompound() == null){
 				itemstack.setTagCompound(new NBTTagCompound());
-				itemstack.getTagCompound().setInteger("Resources", 192);
+				itemstack.getTagCompound().setInteger("Energy", 0);
+				itemstack.getTagCompound().setInteger("Capacity", 250000);
 			}
 		}
 		else if(itemstack.getItemDamage() == 36){
 			if(itemstack.getTagCompound() == null){
 				itemstack.setTagCompound(new NBTTagCompound());
-				itemstack.getTagCompound().setInteger("Resources", 5);
+				itemstack.getTagCompound().setInteger("Energy", 0);
+				itemstack.getTagCompound().setInteger("Capacity", 500000);
 			}
 		}
 		else if(itemstack.getItemDamage() == 37){
 			if(itemstack.getTagCompound() == null){
 				itemstack.setTagCompound(new NBTTagCompound());
-				itemstack.getTagCompound().setInteger("Resources", 64);
+				itemstack.getTagCompound().setInteger("Energy", 0);
+				itemstack.getTagCompound().setInteger("Capacity", 250000);
 			}
 		}
 		else if(itemstack.getItemDamage() == 38){
 			if(itemstack.getTagCompound() == null){
 				itemstack.setTagCompound(new NBTTagCompound());
-				itemstack.getTagCompound().setInteger("Resources", 512);
+				itemstack.getTagCompound().setInteger("Energy", 0);
+				itemstack.getTagCompound().setInteger("Capacity", 200000);
 			}
 		}
 		else if(itemstack.getItemDamage() == 48){
@@ -490,7 +510,8 @@ public class MetadataItems extends Item {
 			if(itemstack.getTagCompound() == null){
 				itemstack.setTagCompound(new NBTTagCompound());
 				itemstack.getTagCompound().setInteger("Time", 0);
-				itemstack.getTagCompound().setInteger("Resources", 4);
+				itemstack.getTagCompound().setInteger("Energy", 0);
+				itemstack.getTagCompound().setInteger("Capacity", 600000);
 			}
 		}
 		else if(itemstack.getItemDamage() == 60){
@@ -519,6 +540,16 @@ public class MetadataItems extends Item {
 				itemstack.setTagCompound(new NBTTagCompound());
 				itemstack.getTagCompound().setInteger("Energy", 0);
 				itemstack.getTagCompound().setInteger("Capacity", 75000000);
+			}
+		}
+		else if(itemstack.getItemDamage() == 67){
+			if(itemstack.getTagCompound() == null){
+				itemstack.setTagCompound(new NBTTagCompound());
+				itemstack.getTagCompound().setInteger("Energy", 2147483647);
+				itemstack.getTagCompound().setInteger("Capacity", 2147483647);
+			}
+			else if(itemstack.getTagCompound().getInteger("Energy") < 2147483647){
+				itemstack.getTagCompound().setInteger("Energy", 2147483647);
 			}
 		}
 		else if(itemstack.getItemDamage() == 70){
@@ -728,16 +759,18 @@ public class MetadataItems extends Item {
 				dataList.add("");
 				dataList.add(EnumChatFormatting.AQUA + "The quasar will place torches on a right click.");
 				dataList.add(EnumChatFormatting.AQUA + "Torches are placed one block above the clicked block");
-				dataList.add(EnumChatFormatting.AQUA + "The quasar can be repaired by using dark matter.");
-				dataList.add(EnumChatFormatting.AQUA + "One dark matter fills the entire buffer. Torches");
-				dataList.add(EnumChatFormatting.AQUA + "are placed one block above the block clicked on.");
+				dataList.add(EnumChatFormatting.AQUA + "Costs 3000 SE per torch placed. Torches are placed");
+				dataList.add(EnumChatFormatting.AQUA + "one block above the block clicked on.");
 			}
 			else{
-				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Resources")){
-					dataList.add(EnumChatFormatting.GOLD + "Resources: " + itemstack.getTagCompound().getInteger("Resources"));
-					dataList.add("");
-				}
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+					dataList.add(EnumChatFormatting.GOLD + "");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+				}
 			}
 		}
 		else if(meta == 35){
@@ -747,15 +780,18 @@ public class MetadataItems extends Item {
 				dataList.add(EnumChatFormatting.AQUA + "The blazar will place glowstone on a right click.");
 				dataList.add(EnumChatFormatting.AQUA + "Glowstone is placed one block above the clicked block");
 				dataList.add(EnumChatFormatting.AQUA + "The blazar can be repaired by using refined dark matter.");
-				dataList.add(EnumChatFormatting.AQUA + "One refined dark matter fills the entire buffer. Glowstone");
-				dataList.add(EnumChatFormatting.AQUA + "is placed one block above the block clicked on.");
+				dataList.add(EnumChatFormatting.AQUA + "Costs 25000 SE per block. Glowstone is placed one block");
+				dataList.add(EnumChatFormatting.AQUA + "above the block clicked on.");
 			}
 			else{
-				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Resources")){
-					dataList.add(EnumChatFormatting.GOLD + "Resources: " + itemstack.getTagCompound().getInteger("Resources"));
-					dataList.add("");
-				}
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+					dataList.add(EnumChatFormatting.GOLD + "");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+				}
 			}
 		}
 		else if(meta == 36){
@@ -764,15 +800,18 @@ public class MetadataItems extends Item {
 				dataList.add("");
 				dataList.add(EnumChatFormatting.AQUA + "The variable star XP will give the player 20-30 levels");
 				dataList.add(EnumChatFormatting.AQUA + "worth of experience. This will have the standard");
-				dataList.add(EnumChatFormatting.AQUA + "diminishing returns after experience level 0");
-				dataList.add(EnumChatFormatting.AQUA + "1 refined dark matter fills the entire buffer.");
+				dataList.add(EnumChatFormatting.AQUA + "diminishing returns after experience level 0.");
+				dataList.add(EnumChatFormatting.AQUA + "Costs 120000 SE per operation");
 			}
 			else{
-				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Resources")){
-					dataList.add(EnumChatFormatting.GOLD + "Resources: " + itemstack.getTagCompound().getInteger("Resources"));
-					dataList.add("");
-				}
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+					dataList.add(EnumChatFormatting.GOLD + "");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+				}
 			}
 		}
 		else if(meta == 37){
@@ -781,16 +820,19 @@ public class MetadataItems extends Item {
 				dataList.add("");
 				dataList.add(EnumChatFormatting.AQUA + "The variable star fluidic will place a liquid block");
 				dataList.add(EnumChatFormatting.AQUA + "in the world. Shift right click to change fluid and");
-				dataList.add(EnumChatFormatting.AQUA + "right click to place the fluid. 2 dark matter fills");
-				dataList.add(EnumChatFormatting.AQUA + "the entire buffer. Fluid blocks are placed on block");
-				dataList.add(EnumChatFormatting.AQUA + "above the block clicked on.");
+				dataList.add(EnumChatFormatting.AQUA + "right click to place the fluid. Water costs 10000 SE");
+				dataList.add(EnumChatFormatting.AQUA + "and lava costs 25000 SE. Fluid blocks are placed on");
+				dataList.add(EnumChatFormatting.AQUA + "block above the block clicked on.");
 			}
 			else{
-				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Resources")){
-					dataList.add(EnumChatFormatting.GOLD + "Resources: " + itemstack.getTagCompound().getInteger("Resources"));
-					dataList.add("");
-				}
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+					dataList.add(EnumChatFormatting.GOLD + "");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+				}
 			}
 		}
 		else if(meta == 38){
@@ -799,17 +841,19 @@ public class MetadataItems extends Item {
 				dataList.add("");
 				dataList.add(EnumChatFormatting.AQUA + "The variable star aquatically igneatic will place");
 				dataList.add(EnumChatFormatting.AQUA + "either stone, cobblestone or obsidian blocks in world.");
-				dataList.add(EnumChatFormatting.AQUA + "Cobblestone costs 1 resource, stone takes 2 resources and");
-				dataList.add(EnumChatFormatting.AQUA + "obisidian takes 5 resources. Shift right click to change");
-				dataList.add(EnumChatFormatting.AQUA + "mode 3 dark matter fills the entire buffer. Blocks are");
-				dataList.add(EnumChatFormatting.AQUA + "one block above the block clicked on.");
+				dataList.add(EnumChatFormatting.AQUA + "Cobblestone costs 5000 SE, stone costs 7500 SE and");
+				dataList.add(EnumChatFormatting.AQUA + "obisidian costs 20000 SE. Shift right click to change");
+				dataList.add(EnumChatFormatting.AQUA + "mode. Blocks are one block above the block clicked on");
 			}
 			else{
-				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Resources")){
-					dataList.add(EnumChatFormatting.GOLD + "Resources: " + itemstack.getTagCompound().getInteger("Resources"));
-					dataList.add("");
-				}
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+					dataList.add(EnumChatFormatting.GOLD + "");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+				}
 			}
 		}
 		else if(meta == 39){
@@ -942,15 +986,20 @@ public class MetadataItems extends Item {
 				dataList.add("");
 				dataList.add(EnumChatFormatting.AQUA + "Right click to change the time of day.");
 				dataList.add(EnumChatFormatting.AQUA + "SHIFT + Right click will change the preset.");
-				dataList.add(EnumChatFormatting.AQUA + "Requires 5 dark matter to refill.");
+				dataList.add(EnumChatFormatting.AQUA + "Requires 125000 Energy");
 			}
 			else{
-				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Resources") && itemstack.getTagCompound().hasKey("Time")){
-					dataList.add(EnumChatFormatting.GOLD + "Resources: " + itemstack.getTagCompound().getInteger("Resources"));
-					dataList.add(EnumChatFormatting.GOLD + "Time Preset: " + (itemstack.getTagCompound().getInteger("Time")*18) + ":00");
-					dataList.add("");
-				}
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy") && itemstack.getTagCompound().hasKey("Time")){
+					if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+						dataList.add(EnumChatFormatting.GOLD + "");
+						String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+						float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+						int percentage = (int)percentageF;
+						dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+					}
+					dataList.add(EnumChatFormatting.GOLD + "Time Preset: " + (itemstack.getTagCompound().getInteger("Time")*18) + ":00");
+				}
 			}
 		}
 		else if(meta == 60){
@@ -964,7 +1013,10 @@ public class MetadataItems extends Item {
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
 				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
 					dataList.add(EnumChatFormatting.GOLD + "");
-					dataList.add(EnumChatFormatting.RED + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/20000");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
 				}
 			}
 		}
@@ -979,7 +1031,10 @@ public class MetadataItems extends Item {
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
 				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
 					dataList.add(EnumChatFormatting.GOLD + "");
-					dataList.add(EnumChatFormatting.RED + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/125000");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
 				}
 			}
 		}
@@ -994,7 +1049,10 @@ public class MetadataItems extends Item {
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
 				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
 					dataList.add(EnumChatFormatting.GOLD + "");
-					dataList.add(EnumChatFormatting.RED + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/8250000");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
 				}
 			}
 		}
@@ -1009,7 +1067,27 @@ public class MetadataItems extends Item {
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
 				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
 					dataList.add(EnumChatFormatting.GOLD + "");
-					dataList.add(EnumChatFormatting.RED + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/75000000");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+				}
+			}
+		}
+		else if(meta == 67){
+			if(Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
+				dataList.add(EnumChatFormatting.DARK_AQUA + "[A creative battery]");
+				dataList.add("");
+				dataList.add(EnumChatFormatting.AQUA + "Has INFINITE SE available to distribute");
+			}
+			else{
+				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+					dataList.add(EnumChatFormatting.GOLD + "");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
 				}
 			}
 		}
@@ -1040,12 +1118,14 @@ public class MetadataItems extends Item {
 				dataList.add(EnumChatFormatting.AQUA + "is below half health, regeneration 3 will be given.");
 			}
 			else{
-				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
-					dataList.add("");
-					dataList.add(EnumChatFormatting.RED + "Energy: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + "SE");
-				}
 				dataList.add(EnumChatFormatting.GOLD + "<Hold SHIFT For Details>");
-
+				if(itemstack.getTagCompound() != null && itemstack.getTagCompound().hasKey("Energy")){
+					dataList.add(EnumChatFormatting.GOLD + "");
+					String format = energyStored.showStatusCapacitor(itemstack.getTagCompound().getInteger("Energy"), itemstack.getTagCompound().getInteger("Capacity"));
+					float percentageF = (float)itemstack.getTagCompound().getInteger("Energy")/(float)itemstack.getTagCompound().getInteger("Capacity")*100;
+					int percentage = (int)percentageF;
+					dataList.add(EnumChatFormatting.BLUE + "ENERGY: " + itemstack.getTagCompound().getInteger("Energy") + "/" + itemstack.getTagCompound().getInteger("Capacity") + EnumChatFormatting.RESET + " (" + format + percentage + "% Full"+ EnumChatFormatting.RESET + ")");
+				}
 			}
 		}
 	}

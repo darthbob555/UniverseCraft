@@ -8,6 +8,7 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 
 import com.universeCraft.blocks.ModBlocks;
 import com.universeCraft.items.ModItems;
@@ -198,12 +199,12 @@ public class ServerTickHandler{
 		ItemStack boots = event.player.inventory.armorItemInSlot(0);
 		for(int i = 0; i<27; i++){
 			ItemStack slot = event.player.inventory.getStackInSlot(i);
-			if(slot != null && (slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 60)) || slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 61)) || slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 62)) || slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 63)))){
+			if(slot != null && (slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 60)) || slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 61)) || slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 62)) || slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 63)) || slot.isItemEqual(new ItemStack(ModItems.Particles, 1, 67)))){
 				if(slot.getTagCompound() != null && slot.getTagCompound().hasKey("Energy")){
-					if(slot.getTagCompound().getInteger("Energy") > 1000){
+					if(slot.getTagCompound().getInteger("Energy") >= 1000){
 						for(int j = 0; j<27; j++){
 							ItemStack slot2 = event.player.inventory.getStackInSlot(j);
-							if(slot2 != null && slot2.isItemEqual(new ItemStack(ModItems.Particles, 1, 70))){
+							if(slot2 != null && !slot2.isItemEqual(new ItemStack(ModItems.Particles, 1, 60)) && !slot2.isItemEqual(new ItemStack(ModItems.Particles, 1, 61)) && !slot2.isItemEqual(new ItemStack(ModItems.Particles, 1, 62)) && !slot2.isItemEqual(new ItemStack(ModItems.Particles, 1, 63)) && !slot2.isItemEqual(new ItemStack(ModItems.StarBase))){
 								if(slot2.getTagCompound() != null && slot2.getTagCompound().hasKey("Energy")){
 									if(slot2.getTagCompound().getInteger("Energy") < slot2.getTagCompound().getInteger("Capacity")){
 										if(slot2.getTagCompound().getInteger("Energy") + 1000 < slot2.getTagCompound().getInteger("Capacity")){
@@ -366,12 +367,18 @@ public class ServerTickHandler{
 
 	@SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
 	public void onEvent(PlayerTickEvent event){
-		if(!UniverseCraft.versionChecked && event.player.worldObj.isRemote && UniverseCraft.versionChecker.isLatestVersion()){
+		if(!UniverseCraft.versionChecked && event.player.worldObj.isRemote && !UniverseCraft.versionChecker.isLatestVersion()){
 			ClickEvent versionCheckChatClickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL, "http://www.curse.com/mc-mods/minecraft/241579-universecraft");
 			ChatStyle clickableChatStyle = new ChatStyle().setChatClickEvent(versionCheckChatClickEvent);
-			ChatComponentText versionWarningChatComponent = new ChatComponentText("There is a newer version of UniverseCraft available!  Click here to see it.");
+			ChatComponentText versionWarningChatComponent = new ChatComponentText(EnumChatFormatting.BLUE + "Click " + EnumChatFormatting.UNDERLINE + "HERE" + EnumChatFormatting.BLUE + " to see it.");
 			versionWarningChatComponent.setChatStyle(clickableChatStyle);
+			event.player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.GREEN + "====================================================="));
+			event.player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.GREEN + "UniverseCraft:"));
+			event.player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.GREEN + ""));
+			event.player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.BLUE + "There is a newer version of UniverseCraft available!"));
 			event.player.addChatMessage(versionWarningChatComponent);
+			event.player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.GREEN + ""));
+			event.player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.GREEN + "====================================================="));
 			UniverseCraft.versionChecked = true;
 		}
 	}

@@ -35,32 +35,9 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class ServerProxy extends CommonProxy {
 
-	CraftingRecipeHandler handler = new CraftingRecipeHandler();
-	public static CustomWorldGenerator worldGen = new CustomWorldGenerator();
-	
     @Override
     public void preInit(FMLPreInitializationEvent e) {
         super.preInit(e);
-		FMLCommonHandler.instance().bus().register(new ServerTickHandler());
-		GameRegistry.registerTileEntity(TileEntityParticleAccelerator.class, "tileEntityParticleAccelerator");
-		GameRegistry.registerTileEntity(TileEntityPartAccelBlock.class, "tileEntityPartAccel");
-		GameRegistry.registerTileEntity(TileEntityAtomicPulveriser.class, "tileEntityPlasmaticGenerator");
-		GameRegistry.registerTileEntity(TileEntityCarbonGenerator.class, "tileEntityCoalGenerator");
-		GameRegistry.registerTileEntity(TileEntityVertexGenerator.class, "tileEntityVertexGenerator");
-		GameRegistry.registerTileEntity(TileEntityStellarGenerator.class, "tileEntityStellarGenerator");
-		GameRegistry.registerTileEntity(TileEntityIonSmall.class, "tileEntityIonSmall");
-		GameRegistry.registerTileEntity(TileEntityIonMedium.class, "tileEntityIonMedium");
-		GameRegistry.registerTileEntity(TileEntityIonLarge.class, "tileEntityIonLarge");
-		GameRegistry.registerTileEntity(TileEntityIonHuge.class, "tileEntityIonHuge");
-		GameRegistry.registerTileEntity(TileEntityIonCreative.class, "tileEntityIonCreative");
-		GameRegistry.registerTileEntity(TileEntityWirelessController.class, "tileEntityWirelessController");
-		GameRegistry.registerTileEntity(TileEntityPlanetaryAssembler.class, "tileEntityQuantumTunnel");
-		GameRegistry.registerTileEntity(TileEntityVacuumPipe.class, "tileEntityVacuumPipe");
-		GameRegistry.registerTileEntity(TileEntityCrystal.class, "tileEntityCrystal");
-		GameRegistry.registerTileEntity(TileEntityDuplication.class, "tileEntityDuplication");
-		GameRegistry.registerTileEntity(TileEntityEnergyAcceptor.class, "tileEntityEnergyAcceptor");
-		GameRegistry.registerTileEntity(TileEntityStellarEnricher.class, "tileEntityStellarEnricher");
-		GameRegistry.registerTileEntity(TileEntityEnergyNode.class, "tileEntityEnergyNode");
     }
 
     @Override
@@ -71,9 +48,5 @@ public class ServerProxy extends CommonProxy {
     @Override
     public void postInit(FMLPostInitializationEvent e) {
         super.postInit(e);
-        GameRegistry.registerWorldGenerator((IWorldGenerator) worldGen, 0);
-		handler.shapedRecipe();
-		handler.shapelessRecipe();
-		handler.smeltingRecipe();
     }
 }

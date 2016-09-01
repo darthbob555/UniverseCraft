@@ -18,7 +18,7 @@ public class UpdateCheckerHandler implements Runnable{
     public void run(){
         InputStream in = null;
         try {
-            in = new URL("https://www.dropbox.com/s/774elaxyi82qnwy/UniverseCraftModVersions.txt?dl=0").openStream();
+            in = new URL("https://raw.githubusercontent.com/darthbob555/UniverseCraft/master/CurrentVersion.txt").openStream();
         } 
         catch 
         (MalformedURLException e) {
@@ -38,9 +38,7 @@ public class UpdateCheckerHandler implements Runnable{
         finally {
             IOUtils.closeQuietly(in);
         }
-        System.out.println("Latest mod version = "+latestVersion);
         isLatestVersion = UniverseCraft.VERSION.equals(latestVersion);
-        System.out.println("Are you running latest version = "+isLatestVersion);
     }
     
     public boolean isLatestVersion()
